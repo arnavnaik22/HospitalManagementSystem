@@ -1,0 +1,109 @@
+1. Get all patient details:
+
+SELECT * FROM Patient;
+
+2. Get all doctors and their specialties:
+SELECT Doctor_ID, Name, Specialty FROM Doctor;
+
+
+3. Get all appointments for a specific doctor
+
+SELECT a.Appointment_ID, p.Name AS Patient_Name, a.Date, a.Time, a.Purpose
+FROM Appointment a
+JOIN Patient p ON a.Patient_ID = p.Patient_ID
+WHERE a.Doctor_ID = 1;
+
+4. Check available rooms:
+
+SELECT * FROM Room WHERE Status = 'Available';
+
+5. Get total bill for each patient:
+
+SELECT i.Invoice_ID, p.Name AS Patient_Name, i.Room_Charges, i.Treatment_Charges, i.Total_Amount
+FROM Invoice i
+JOIN Patient p ON i.Patient_ID = p.Patient_ID;
+
+6. Treatments received by a patient:
+
+SELECT t.Treatment_Name, t.Cost, t.Start_Date, t.End_Date
+FROM Patient_Treatment pt
+JOIN Treatment t ON pt.Treatment_ID = t.Treatment_ID
+WHERE pt.Patient_ID = 3;
+
+-- Replace 3 with the desired patient ID.
+
+7. Patients currently admitted (rooms occupied):
+
+SELECT r.Room_ID, r.Room_Type, r.Floor_Number, p.Name
+FROM Room r
+JOIN Patient p ON r.Patient_ID = p.Patient_ID
+WHERE r.Status = 'Occupied';
+
+8. Unpaid or partially paid invoices (optional enhancement):
+
+SELECT i.Invoice_ID, p.Name, i.Total_Amount, SUM(pay.Amount) AS Paid
+FROM Invoice i
+JOIN Patient p ON i.Patient_ID = p.Patient_ID
+LEFT JOIN Payment pay ON i.Invoice_ID = pay.Invoice_ID
+GROUP BY i.Invoice_ID, p.Name, i.Total_Amount
+HAVING SUM(pay.Amount) < i.Total_Amount;
+
+
+9. Generate daily admission and discharge summary:
+
+-- Admissions (based on appointments)
+SELECT a.Date AS Admission_Date, COUNT(*) AS Total_Admissions
+FROM Appointment a
+GROUP BY a.Date
+ORDER BY a.Date DESC;
+
+-- Discharges (based on invoice issue date)
+SELECT i.Issue_Date AS Discharge_Date, COUNT(*) AS Total_Discharged
+FROM Invoice i
+GROUP BY i.Issue_Date
+ORDER BY i.Issue_Date DESC;
+
+
+10. Revenue generated each day:
+
+SELECT Issue_Date, SUM(Total_Amount) AS Daily_Revenue
+FROM Invoice
+GROUP BY Issue_Date
+ORDER BY Issue_Date DESC;
+
+11. Search for patient by name or contact:
+
+SELECT * FROM Patient
+WHERE LOWER(Name) LIKE '%john%' OR Phone LIKE '%1001%';
+
+12. List doctors with no appointments today:
+
+SELECT d.Doctor_ID, d.Name
+FROM Doctor d
+WHERE NOT EXISTS (
+  SELECT 1 FROM Appointment a
+  WHERE a.Doctor_ID = d.Doctor_ID AND a.Date = SYSDATE
+);
+
+13. Most frequent treatments:
+
+SELECT t.Treatment_Name, COUNT(*) AS Frequency
+FROM Patient_Treatment pt
+JOIN Treatment t ON pt.Treatment_ID = t.Treatment_ID
+GROUP BY t.Treatment_Name
+ORDER BY Frequency DESC;
+
+14. Update contact number of a patient:
+
+UPDATE Patient
+SET Phone = '555-9999'
+WHERE Patient_ID = 4;
+
+15. Delete old appointments (e.g., before Jan 2024);
+
+DELETE FROM Appointment
+WHERE Date < TO_DATE('2024-01-01', 'YYYY-MM-DD');
+
+
+
+

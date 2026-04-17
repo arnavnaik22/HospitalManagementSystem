@@ -1,0 +1,181 @@
+1. Search_Patient (Function):
+
+
+set serveroutput on;
+DECLARE
+  v_id        NUMBER;
+  v_name      VARCHAR2(100);
+  rc          SYS_REFCURSOR;
+BEGIN
+  -- Accept user input
+  v_id := &Enter_Patient_ID;  -- Enter 0 if unknown
+  v_name := '&Enter_Patient_Name'; -- Leave blank if not searching by name
+
+  rc := Search_Patient(v_id, v_name);
+  DBMS_SQL.RETURN_RESULT(rc);
+END;
+/
+
+2. Generate_Invoice (Procedure):
+
+set serveroutput on;
+DECLARE
+  v_patient_id NUMBER;
+BEGIN
+  v_patient_id := &Enter_Patient_ID;
+  Generate_Invoice(v_patient_id);
+  DBMS_OUTPUT.PUT_LINE('Invoice generated.');
+END;
+/
+
+
+ROLLBACK:
+
+-- Delete the last invoice generated
+
+
+set serveroutput on;
+DECLARE
+  v_patient_id NUMBER := &Enter_Patient_ID;
+BEGIN
+  DELETE FROM Invoice
+  WHERE Patient_ID = v_patient_id
+    AND Issue_Date = (SELECT MAX(Issue_Date) FROM Invoice WHERE Patient_ID = v_patient_id);
+  COMMIT;
+  DBMS_OUTPUT.PUT_LINE('Last invoice rolled back.');
+END;
+/
+
+3. Update_Patient_Info (Procedure):
+
+
+set serveroutput on;
+DECLARE
+  v_id            NUMBER;
+  v_new_phone     VARCHAR2(15);
+  v_new_insurance VARCHAR2(100);
+BEGIN
+  v_id := &Enter_Patient_ID;
+  v_new_phone := '&Enter_New_Contact_Number';
+  v_new_insurance := '&Enter_New_Insurance_Details';
+
+  Update_Patient_Info(v_id, v_new_phone, v_new_insurance);
+  DBMS_OUTPUT.PUT_LINE('Patient info updated.');
+END;
+/
+
+
+ROLLBACK THIS PROCECURE:
+
+DECLARE
+  v_id NUMBER := &Enter_Patient_ID;
+BEGIN
+  UPDATE Patient
+  SET Phone = '&Previous_Contact_Number',
+      Insurance_Detail = '&Previous_Insurance_Details'
+  WHERE Patient_ID = v_id;
+  COMMIT;
+  DBMS_OUTPUT.PUT_LINE('Update rolled back.');
+END;
+/
+
+
+4. Check_Appointment_Conflict (Function):
+
+
+set serveroutput on;
+DECLARE
+  v_doctor_id    NUMBER;
+  v_date         DATE;
+  v_time         TIMESTAMP;
+  v_result       VARCHAR2(100);  -- increased size to hold message
+BEGIN
+  v_doctor_id := &Enter_Doctor_ID;
+  v_date := TO_DATE('&Enter_Date', 'YYYY-MM-DD');
+  v_time := TO_TIMESTAMP('&Enter_Time', 'YYYY-MM-DD HH24:MI');
+
+  v_result := Check_Appointment_Conflict(v_doctor_id, v_date, v_time);
+  DBMS_OUTPUT.PUT_LINE('Conflict Status: ' || v_result);
+END;
+/
+
+
+5. Daily_Report (Procedure):
+
+
+set serveroutput on;
+DECLARE
+  v_date DATE;
+  v_details CHAR(1);
+  v_include_details BOOLEAN;
+BEGIN
+  v_date := TO_DATE('&report_date', 'YYYY-MM-DD');
+  v_details := '&include_details';
+
+  v_include_details := (UPPER(v_details) = 'Y');
+
+  Daily_Report(v_date, v_include_details);
+END;
+/
+
+6. Calculate_Patient_Balance (Function):
+
+
+set serveroutput on;
+DECLARE
+  v_patient_id NUMBER;
+  v_balance    NUMBER;
+BEGIN
+  v_patient_id := &Enter_Patient_ID;
+  v_balance := Calculate_Patient_Balance(v_patient_id);
+
+  DBMS_OUTPUT.PUT_LINE('Outstanding Balance: Rs. ' || v_balance);
+END;
+/
+
+
+7. trg_update_room_status (Trigger):
+
+
+set serveroutput on;
+DECLARE
+  v_room_id     NUMBER;
+  v_new_status  VARCHAR2(30);  -- slightly larger to avoid overflow
+BEGIN
+  v_room_id := &Enter_Room_ID;
+  v_new_status := '&Enter_New_Status';  -- cleaner substitution
+
+  UPDATE Room
+  SET Status = v_new_status
+  WHERE Room_ID = v_room_id;
+
+  COMMIT;
+
+  DBMS_OUTPUT.PUT_LINE('Room status updated. Check log table.');
+END;
+/
+
+
+ROLLBACK:
+
+DECLARE
+  v_room_id NUMBER := &Enter_Room_ID;
+BEGIN
+  -- Reset status (replace with original manually)
+  UPDATE Room SET 
+    Status = '&Previous_Status', 
+    Patient_ID = &Original_Patient_ID
+  WHERE Room_ID = v_room_id;
+
+  DELETE FROM Room_Status_Log
+  WHERE Room_ID = v_room_id
+    AND Change_Date = (SELECT MAX(Change_Date) FROM Room_Status_Log WHERE Room_ID = v_room_id);
+
+  COMMIT;
+  DBMS_OUTPUT.PUT_LINE('Trigger effects rolled back.');
+END;
+/
+
+
+
+

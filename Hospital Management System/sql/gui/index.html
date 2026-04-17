@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hospital Management</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    input[type="text"] { padding: 6px; width: 250px; margin-right: 10px; }
+    button { padding: 6px 12px; }
+  </style>
+</head>
+<body>
+  <h1>🏥 Hospital Management System</h1>
+  <h2>Search Patients</h2>
+  <input type="text" id="searchInput" placeholder="Search by name, ID, or phone" />
+  <button onclick="searchPatients()">Search</button>
+  <table id="resultsTable">
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Phone</th><th>Gender</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+    <script>
+        function searchPatients() {
+        const search = document.getElementById("searchInput").value;
+      fetch(`http://localhost:8000/patients?search=${encodeURIComponent(search)}`)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.querySelector("#resultsTable tbody");
+          tbody.innerHTML = "";
+          data.forEach(p => {
+            tbody.innerHTML += `<tr><td>${p.id}</td><td>${p.name}</td><td>${p.phone}</td><td>${p.gender}</td></tr>`;
+          });
+        });
+    }
+  </script>
+</body>
+</html>

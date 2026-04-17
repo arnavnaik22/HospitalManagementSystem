@@ -1,0 +1,39 @@
+
+1) Patient (Patient_ID (PK), Name, DOB, Gender, Address, Phone, Insurance_Detail)
+
+- Relationships:
+
+	Takes Appointments → Appointment(Patient_ID as FK)
+
+	Assigned Room → Room(Patient_ID as FK)
+
+	Has Invoices → Invoice(Patient_ID as FK)
+
+2) Doctor (Doctor_ID (PK), Name, Specialty, Contact, Working_Hours)
+
+
+- Relationships:
+
+	Assigned to Appointments → Appointment(Doctor_ID as FK)
+
+3) Appointment (Appointment_ID (PK), Patient_ID (FK), Doctor_ID (FK), Date, Time, Purpose)
+
+
+4) Treatment (Treatment_ID (PK), Doctor_ID (FK), Treatment_Name, Cost, Start_Date, End_Date)
+
+5) Report (Report_ID (PK), patient_id (fk), doctor_id (fk)  Report_Type, Report_Date, diagnosis )
+
+6) Room (Room_ID (PK), Patient_ID (FK), Room_Type, Floor_Number, Status)
+
+7) Invoice (Invoice_ID (PK), Patient_ID (FK), Room_Charges, Treatment_Charges, Total_Amount, Issue_Date)
+
+8) Payment (Payment_ID (PK), Invoice_ID (FK), Amount, Payment_Date, Payment_Method)
+
+9) Patient_Treatment (Patient_ID (PK), Treatment_ID (PK)) 
+
+
+depracations: 
+Medical_Record (Record_ID (PK), Patient_ID (FK), Diagnosis, Treatment, Record_Date) //
+Primary Key: Record_ID
+Foreign Key: Patient_ID → Patient
+
